@@ -165,6 +165,19 @@ application running on OpenShift from their IDE.
 1. Return to the terminal window and press `CTRL + C` to stop port forwarding.
 1. Type `exit` to close the terminal window.
 
+#### Explore inside an application container
+
+These steps demonstrate how a developer can explore the filesystem and processes
+of an application component running inside a container on OpenShift.
+
+1. Double-click the Terminal icon on the desktop.
+1. Type `oc get pods` and find the name of the pod hosting the Ticket monster
+   application.  It will be of the form `monster-2-[a-z0-9]{5}` and will be
+   in state `Running`.  Call this $POD.
+1. Type `oc rsh $POD` and press Enter.
+1. Type further commands to explore the container.
+1. Type `exit` to close the terminal window.
+
 #### Rollback an application component (developer)
 
 These steps demonstrate how a developer could rollback an unwanted
