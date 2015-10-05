@@ -4,7 +4,7 @@ PUBIP=$(curl -s 169.254.169.254/latest/meta-data/public-ipv4)
 PRIVIP=$(ip -4 addr show dev eth0 | sed -n '/inet / { s!.*inet !!; s!/.*!!; p; }')
 OLDHN=openshift.example.com
 NEWHN=ec2-${PUBIP//./-}.eu-west-1.compute.amazonaws.com
-PATHS="/etc/hostname /etc/openshift /home/demo/.kube/config /home/demo/.m2/settings.xml /home/demo/git /root/.kube/config /usr/lib64/firefox/firefox.cfg"
+PATHS="/etc/hostname /etc/openshift /home/demo/.kube/config /home/demo/.m2/settings.xml /home/demo/git /root/.kube/config /usr/lib64/firefox/firefox.cfg /usr/share/doc/demobuilder/index.html"
 
 stop() {
   systemctl stop openshift-routewatcher
@@ -47,6 +47,8 @@ stop
 #save
 #reset
 
+cp index.html /usr/share/doc/demobuilder/index.html
+
 find $PATHS -type f | xargs sed -i -e "s/${OLDHN//./\\.}/$NEWHN/g"
 find $PATHS -type f | xargs sed -i -e "s/${OLDHN//./-}/${NEWHN//./-}/g"
 find $PATHS -type f | xargs sed -i -e "s/$PRIVIP/$PUBIP/g"
@@ -65,6 +67,7 @@ sed -i -e "/$OLDHN/ d" /etc/hosts
 
 sed -i -e "s/apps.example.com/apps.$PUBIP.xip.io/" /etc/openshift/master/master-config.yaml
 
+python -c 'import random; print random.randint(11, 1000000000)' >/etc/openshift/master/ca.serial.txt
 ./openshift-aws-crypto.py $NEWHN
 
 hostname $NEWHN
