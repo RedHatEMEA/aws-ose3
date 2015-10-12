@@ -86,9 +86,10 @@ For now, read this carefully and practice with one instance first!
    Currently, `provision.sh` covers the following steps:
 
    * Copy the scripts in target/ to the instance
-   * Run the re-ip script (this binds OpenShift to the new hostname and IP of
-     the instance, rebuilds the SSL certs, etc.)
-   * Enable password-based ssh authentication (so the demo user can ssh in)
+   * Only necessary if not VNCing in: run the re-ip script (this binds OpenShift
+     to the new hostname and IP of the instance, rebuilds the SSL certs, etc.)
+   * Only necessary if not VNCing in: enable password-based ssh authentication
+     (so the demo user can ssh in)
    * [Pre-warm the EBS volume](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-prewarm.html)
      (note that this is quite time-consuming)
    * Pre-warm OpenShift by doing a NodeJS and Java build
