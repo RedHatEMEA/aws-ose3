@@ -4,7 +4,7 @@ PUBIP=$(curl -s 169.254.169.254/latest/meta-data/public-ipv4)
 PRIVIP=$(ip -4 addr show dev eth0 | sed -n '/inet / { s!.*inet !!; s!/.*!!; p; }')
 OLDHN=openshift.example.com
 NEWHN=ec2-${PUBIP//./-}.eu-west-1.compute.amazonaws.com
-PATHS="/etc/hostname /etc/openshift /home/demo/.kube/config /home/demo/.m2/settings.xml /home/demo/git /root/.kube/config /usr/lib64/firefox/firefox.cfg /usr/share/doc/demobuilder/index.html"
+PATHS="/etc/hostname /etc/openshift /home/demo/.kube/config /home/demo/.m2/settings.xml /home/demo/git /root/.kube/config /usr/lib64/firefox/firefox.cfg /usr/share/doc/demobuilder"
 
 stop() {
   systemctl stop openshift-routewatcher

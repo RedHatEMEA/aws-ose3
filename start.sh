@@ -1,5 +1,15 @@
 #!/bin/bash
 
-aws ec2 run-instances --image-id ami-1becd86c --key-name $USER --security-group-ids sg-bd8757d9 --instance-type m4.large --subnet-id subnet-a0bbe2c5 --ebs-optimized --block-device-mappings 'DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeType=io1,Iops=1200}'
+AMI=ami-1becd86c
+KEYNAME=$USER
+SECGROUP=sg-bd8757d9
+SUBNET=subnet-a0bbe2c5
+N=1
 
-# aws ec2 allocate-address --domain vpc
+# aws ec2 run-instances --image-id $AMI --key-name $KEYNAME \
+#   --security-group-ids $SECGROUP --instance-type m4.large \
+#   --subnet-id $SUBNET --ebs-optimized \
+#   --block-device-mappings 'DeviceName=/dev/sda1,Ebs={DeleteOnTermination=true,VolumeType=gp2}' \
+#   --count $N
+
+# aws ec2 describe-instances | python print-instances.py >creds.csv
