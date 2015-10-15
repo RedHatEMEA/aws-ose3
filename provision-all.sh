@@ -21,10 +21,10 @@ do
   hosts+=("${dns}")
 
   echo "*** Updating password for ${name}"
-  bin/issh cloud-user@${dns} -i ${identity} -tt "echo ${pwd} | sudo passwd demo --stdin" < /dev/null
+  bin/issh cloud-user@${dns} -i ${identity} -tt "echo ${pwd} | sudo passwd demo --stdin" &>log/log-pwd-$dns < /dev/null
 
-  scp -i ${identity} -S bin/issh target/* cloud-user@$dns: &>log/log-$dns
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./openshift-aws-reip.sh"' &>log/log-$dns < /dev/null &
+  scp -i ${identity} -S bin/issh target/* cloud-user@$dns: &>log/log-script-tx-$dns
+  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./openshift-aws-reip.sh"' &>log/log-ip-$dns < /dev/null &
 done < creds.csv
 
 echo "*** WAITING FOR IPs TO BE UPDATED ***"
@@ -33,11 +33,11 @@ wait
 for dns in "${hosts[@]}"
 do
 
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PermitEmptyPasswords yes/ d" /etc/ssh/sshd_config' &>log/log2-$dns < /dev/null
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PasswordAuthentication no/ d" /etc/ssh/sshd_config' &>log/log2-$dns < /dev/null
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'systemctl restart sshd.service' &>log/log2-$dns < /dev/null
+  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PermitEmptyPasswords yes/ d" /etc/ssh/sshd_config' &>>log/log-ip-$dns < /dev/null
+  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PasswordAuthentication no/ d" /etc/ssh/sshd_config' &>>log/log-ip-$dns < /dev/null
+  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'systemctl restart sshd.service' &>>log/log-ip-$dns < /dev/null
   
-  bin/issh -i ${identity} -tt cloud-user@$dns nohup sudo ./warm-ebs.sh &>log/log2-$dns < /dev/null &
+  bin/issh -i ${identity} -tt cloud-user@$dns nohup sudo ./warm-ebs.sh &>log/log-ebs-$dns < /dev/null &
 
 done 
 
@@ -47,8 +47,8 @@ wait
 for dns in "${hosts[@]}"
 do
 
-  bin/issh -i ${identity} -tt cloud-user@$dns 'bash -c "ps -ax|grep xvda"' &>log/log2-$dns < /dev/null
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo ./warm-openshift.sh &>log/log2-$dns < /dev/null &
+  bin/issh -i ${identity} -tt cloud-user@$dns 'bash -c "ps -ax|grep xvda"' &>>log/log-xvda-$dns < /dev/null
+  bin/issh -i ${identity} -tt cloud-user@$dns sudo ./warm-openshift.sh &>log/log-warmup-$dns < /dev/null &
 
 done
 
@@ -58,7 +58,7 @@ wait
 for dns in "${hosts[@]}"
 do
 
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo ./cleanup.sh &>log/log2-$dns < /dev/null & 
+  bin/issh -i ${identity} -tt cloud-user@$dns sudo ./cleanup.sh &>log/log-cleanup-$dns < /dev/null & 
 
 done
 

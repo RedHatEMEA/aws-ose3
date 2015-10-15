@@ -47,8 +47,6 @@ stop
 #save
 #reset
 
-cp index.html /usr/share/doc/demobuilder/index.html
-
 find $PATHS -type f | xargs sed -i -e "s/${OLDHN//./\\.}/$NEWHN/g"
 find $PATHS -type f | xargs sed -i -e "s/${OLDHN//./-}/${NEWHN//./-}/g"
 find $PATHS -type f | xargs sed -i -e "s/$PRIVIP/$PUBIP/g"
