@@ -56,6 +56,29 @@ For now, read this carefully and practice with one instance first!
 * Customer briefed that they will need to be able to VNC an AWS instance at a
   minimum.  Ideally access on ports 22, 80, 443, 5900 and 8443 is best
 
+## TL;DR SETUP
+
+1. Create instances
+   
+   * Edit `start.sh` to match your requirements, one run make a node of the **RunName** value (date-time)
+   * `AMI=ami-1becd86c` - change AMI ID if required
+   * `KEYNAME=$USER` - we expect that your security key is named the same as your current user
+   * `SECGROUP=sg-xxxxxxx` - you'll need to change this to match the security group of your VPC
+   * `SUBNET=subnet-xxxxxxxx` - you'll need to change this to match the subnet ID on your VPC 
+   * `N=2` - this is the number of instances that will be created, set to required number
+
+1. Generate demo user passwords
+
+   * Run the `generate-creds.sh` with the RunName value from reported at the end of the `start.sh` run. 
+   * You should get a new `creds.csv` file that lists each instance with a unique random demo user password
+
+1. Tweak AWS instance configuration
+
+   * Take a deep breath
+   * Run `provision-all.sh` passing the path to your AWS private key, e.g. `$HOME/.aws/$USER.pem`
+   * During the run log files for each instance should appear in a `log` directory
+
+
 ## Setup
 
 1. Get the instance(s) up and running

@@ -19,6 +19,6 @@ do
   pwd=$(echo ${vals[3]} | cut -d '"' -f2)
 
   echo "*** Updating password for ${name}"
-  ssh -o StrictHostKeyChecking=no cloud-user@${dns} -i ${identity} -tt "echo ${pwd} | sudo passwd demo --stdin" < /dev/null
+  bin/issh cloud-user@${dns} -i ${identity} -tt "echo ${pwd} | sudo passwd demo --stdin" < /dev/null
 
 done < creds.csv
