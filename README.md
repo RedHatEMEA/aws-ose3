@@ -56,7 +56,7 @@ For now, read this carefully and practice with one instance first!
 * Customer briefed that they will need to be able to VNC an AWS instance at a
   minimum.  Ideally access on ports 22, 80, 443, 5900 and 8443 is best
 
-## TL;DR SETUP
+## Quick Setup
 
 1. Create instances
    
@@ -78,6 +78,15 @@ For now, read this carefully and practice with one instance first!
    * Run `provision-all.sh` passing the path to your AWS private key, e.g. `$HOME/.aws/$USER.pem`
    * During the run log files for each instance should appear in a `log` directory
 
+1. Generate Labels
+
+   * **requires: glabels** `dnf install glabels -y`
+   * **requires: qrencode** `dnf install qrencode -y`
+   * The label template `merge.glabels` is currently formatted for Avery J8161 A4 labels
+   * Run `generate-labels.sh` this will read `creds.csv` and generate some new files:
+     * `label-data.csv` - data file for label
+     * `qrcodes/<img>.png` - QRCode images for labels, should open OpenShift master web console
+     * `output.pdf` - rendered label file as PDF, send to printer (make sure scaling is turned off)  
 
 ## Setup
 
