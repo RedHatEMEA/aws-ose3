@@ -2,3 +2,4 @@
 
 dd if=/dev/xvda of=/dev/null bs=1M </dev/null &>/dev/null &
 disown -a
+rm /home/cloud-user/*

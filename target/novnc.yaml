@@ -11,12 +11,14 @@ objects:
   kind: ImageStream
   metadata:
     name: novnc
+
 - apiVersion: v1
   kind: ImageStream
   metadata:
     name: fedora
   spec:
     dockerImageRepository: library/fedora:22
+
 - apiVersion: v1
   kind: BuildConfig
   metadata:
@@ -28,7 +30,7 @@ objects:
         name: novnc:latest
     source:
       git:
-        uri: https://github.com/edseymour/ose-vnc.git
+        uri: https://github.com/RedHatEMEA/ose-vnc.git
       type: Git
     strategy:
       dockerStrategy:
@@ -36,6 +38,7 @@ objects:
           kind: ImageStreamTag
           name: fedora:22
       type: Docker
+
 - apiVersion: v1
   kind: DeploymentConfig
   metadata:
@@ -66,13 +69,14 @@ objects:
     triggers:
     - type: ConfigChange
     - imageChangeParams:
-        automatic: true
+        automatic: "true"
         containerNames:
         - novnc
         from:
           kind: ImageStream
           name: novnc
       type: ImageChange
+
 - apiVersion: v1
   kind: Service
   metadata:
@@ -85,10 +89,11 @@ objects:
       protocol: TCP
     selector:
       deploymentConfig: novnc
+
 - apiVersion: v1
   kind: Route
   metadata:
-    name: desktop
+    name: "no"
   spec:
     tls:
       termination: edge
