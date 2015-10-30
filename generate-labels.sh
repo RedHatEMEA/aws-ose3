@@ -1,30 +1,27 @@
-#!/bin/bash -ex
+#!/bin/bash -e
 
-mkdir -p qrcodes
-output=label-data.csv
+mkdir -p labels
 
-echo "\"Instance Name\",IP,DNS,Password,IMG,Host,Domain" > ${output}
+echo '"Instance Name","IP","DNS","Password","IMG","Host","Domain"' >labels/data.csv
 
-while read line
-do
+while read line; do
   OLDIFS=$IFS;
   IFS=, vals=($line)
   IFS=$OLDIFS
 
-  name=${vals[0]}
-  ip=${vals[1]}
-  dns=$(echo ${vals[2]} | cut -d '"' -f2)
-  hnm=$(echo $dns | cut -d '.' -f1)
-  dmn=$(echo $dns | cut -d '.' -f2-)
-  pwd=$(echo ${vals[3]} | cut -d '"' -f2)
-  img="qrcodes/${dns}.png"
+  name=$(tr -d '"' <<< ${vals[0]})
+  ip=$(tr -d '"' <<< ${vals[1]})
+  dns=$(tr -d '"' <<< ${vals[2]})
+  password=$(tr -d '"' <<< ${vals[3]})
 
-  /usr/bin/qrencode -o ${img} "https://${dns}:8443/"
+  hostname=${dns%%.*}
+  domain=${dns#*.}
 
-  echo "${name},${ip},\"${dns}\",\"${pwd}\",\"$(pwd)/${img}\",\"${hnm}\",\"${dmn}\"" >> ${output}
+  qr="$(pwd)/labels/$dns.png"
 
+  qrencode -o $qr "https://$dns:8443/"
+
+  echo \"$name\",\"$ip\",\"$dns\",\"$password\",\"$qr\",\"$hostname\",\"$domain\" >>labels/data.csv
 done < creds.csv
 
-glabels-3-batch -i label-data.csv merge.glabels
-
-#evince output.pdf
+glabels-3-batch -i labels/data.csv docs/labels.glabels -o labels/labels.pdf
