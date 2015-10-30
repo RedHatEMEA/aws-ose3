@@ -1,12 +1,9 @@
-#!/bin/bash 
+#!/bin/bash
+
+. config
 
 N=$1
 [ "$N" == "" ] || [ "$N" -le "0" ] && echo "*** PLEASE PROVIDE THE NUMBER OF INSTANCES TO CREATE ***" && exit 1
-
-AMI=ami-1becd86c
-KEYNAME=$USER
-SECGROUP=sg-a4bc1ac0
-SUBNET=subnet-7d690824
 
 # generate an ignore list
 ignore=$(aws ec2 describe-instances | awk '/InstanceId/ {print $2}' | tr -d '",')
