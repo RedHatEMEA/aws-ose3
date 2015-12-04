@@ -36,8 +36,8 @@ wait
 for dns in "${hosts[@]}"
 do
   bin/issh ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PermitEmptyPasswords yes/ d" /etc/ssh/sshd_config' &>logs/$dns-4-sshd
-  bin/issh ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PasswordAuthentication no/ d" /etc/ssh/sshd_config' &>>logs/$dns-4-sshd
-  bin/issh ${identity} -tt cloud-user@$dns sudo 'systemctl restart sshd.service' &>>logs/$dns-4-sshd
+  bin/issh ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PasswordAuthentication no/ d" /etc/ssh/sshd_config' >>logs/$dns-4-sshd 2>&1
+  bin/issh ${identity} -tt cloud-user@$dns sudo 'systemctl restart sshd.service' >>logs/$dns-4-sshd 2>&1
   bin/issh ${identity} -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./create-novnc.sh"' &>logs/$dns-5-novnc &
 done
 
