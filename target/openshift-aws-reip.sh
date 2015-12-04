@@ -1,5 +1,7 @@
 #!/bin/bash -ex
 
+sleep -- $((300 - $(cut -d. -f1 /proc/uptime))) || true
+
 PUBIP=$(curl -s 169.254.169.254/latest/meta-data/public-ipv4)
 PRIVIP=$(ip -4 addr show dev eth0 | sed -n '/inet / { s!.*inet !!; s!/.*!!; p; }')
 PUBHN=openshift.$PUBIP.xip.io
