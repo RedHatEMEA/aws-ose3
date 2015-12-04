@@ -55,7 +55,7 @@ first!
   * Sanity check your VPC internet routing, elastic IP, public DNS resolution,
     firewall works with a standard Linux instance!
 
-* Access to the base AMI, currently **ami-1becd86c**.  E-mail me your
+* Access to the base AMI, currently **ami-14fc5b67**.  E-mail me your
   AWS account number to get access
 
 * Customer briefed that they will need to be able to VNC an AWS instance at a
@@ -94,14 +94,15 @@ first!
 1. Tweak AWS instance configuration
 
    * Take a deep breath!
-   * Run `./provision-all.sh KEY` passing the path to your AWS private key, e.g.
-     `$HOME/.aws/$USER.pem`
+   * Run `./provision-all.sh [KEY]` passing the path to your AWS private key,
+     e.g. `$HOME/.aws/$USER.pem`, if appropriate
 
   * Currently, `provision-all.sh` covers the following steps:
 
      * Copy the scripts in target/ to the instance
-     * Only necessary if not VNCing in: run the re-ip script (this binds OpenShift
-       to the new hostname and IP of the instance, rebuilds the SSL certs, etc.)
+     * Only necessary if not VNCing in: run the re-ip script (this binds
+       OpenShift to the new hostname and IP of the instance, rebuilds the SSL
+       certs, etc.)
      * Only necessary if not VNCing in: enable password-based ssh authentication
        (so the demo user can ssh in)
      * [Pre-warm the EBS volume](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-prewarm.html)

@@ -11,7 +11,7 @@ def key_val(pairs, key):
           return k["Value"]
     return None
 
-j = json.loads(sys.stdin.read())
+j = json.load(sys.stdin)
 for r in j["Reservations"]:
     for i in r["Instances"]:
         if i["State"]["Name"] == "running":
