@@ -47,6 +47,7 @@ first!
 
 * Appropriate AWS setup
 
+  * Ensure your VPC has an Internet Gatway and route, new ones don't by default
   * Ensure your VPC has *DNS hostnames* set to yes
   * Ensure your VPC subnet is in the 192.168 range, not 172.anything (otherwise
     a k8s conflict is possible)
