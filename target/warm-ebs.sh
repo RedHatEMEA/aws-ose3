@@ -1,5 +1,11 @@
 #!/bin/bash
 
-dd if=/dev/xvda of=/dev/null bs=1M </dev/null &>/dev/null &
-disown -a
-rm /home/cloud-user/*
+fio --readonly - <<EOF
+[volume-initialize]
+filename=/dev/xvda
+rw=read
+bs=256k
+iodepth=128
+ioengine=libaio
+direct=1
+EOF

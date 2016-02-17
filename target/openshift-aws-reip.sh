@@ -23,7 +23,7 @@ systemctl daemon-reload
 cp atomic-openshift-dns-intercept.py /usr/local/libexec
 systemctl restart atomic-openshift-dns-intercept
 
-python -c 'import random; print random.randint(11, 1000000000)' >/etc/origin/master/ca.serial.txt
+python -c 'import random; print "%02X" % random.randint(11, 1000000000)' >/etc/origin/master/ca.serial.txt
 
 ./reip.py $PRIVHN $PUBHN $PRIVIP $PUBIP $PUBIP.xip.io
 
@@ -42,17 +42,6 @@ contexts:
   name: ${PUBHN//./-}:8443
 current-context: ${PUBHN//./-}:8443
 EOF
-
-for i in /home/demo/git/*; do
-  pushd $i
-  rm -rf .git
-  git init
-  git add -A
-  git commit -m 'Initial commit'
-  git remote add origin git://$PRIVHN/demo/$(basename $i)
-  git push -f -u origin master
-  popd
-done
 
 chown -R demo:demo /home/demo
 

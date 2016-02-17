@@ -11,8 +11,13 @@ import yaml
 
 
 def sn():
-    sn = int(open("/etc/origin/master/ca.serial.txt").read())
-    open("/etc/origin/master/ca.serial.txt", "w").write("%u" % (sn + 1))
+    sn = int(open("/etc/origin/master/ca.serial.txt").read(), 16)
+
+    sntext = "%X" % (sn + 1)
+    if len(sntext) % 2:
+        sntext = "0" + sntext
+
+    open("/etc/origin/master/ca.serial.txt", "w").write(sntext)
     return sn
 
 
