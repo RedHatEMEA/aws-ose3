@@ -81,32 +81,25 @@ first!
      I suggest creating 10% extra instances for contingency, as well as having a
      spare one for you to use to ensure everything is working
    * Once run, make a note of the *RunName* value (date/time)
-   * Wait for the instances come up OK and complete booting
-
-1. Generate demo user passwords
-
-   * Run `./generate-creds.sh RUNNAME` with the *RunName* value from reported
-     at the end of the `start.sh` run
    * You should get a new `creds.csv` file that lists each instance.  This file
      will have the following columns: name, IP, DNS, automatically generated
      password of the form [a-z]{8}
+   * Wait for the instances come up OK and complete booting
 
 1. Tweak AWS instance configuration
 
    * Take a deep breath!
    * Run `./provision-all.sh [KEY]` passing the path to your AWS private key,
-     e.g. `$HOME/.aws/$USER.pem`, if appropriate
+     e.g. `$HOME/.aws/$USER.pem`, if required
 
   * Currently, `provision-all.sh` covers the following steps:
 
      * Copy the scripts in target/ to the instance
-     * Only necessary if not VNCing in: run the re-ip script (this binds
-       OpenShift to the new hostname and IP of the instance, rebuilds the SSL
-       certs, etc.)
-     * Only necessary if not VNCing in: enable password-based ssh authentication
-       (so the demo user can ssh in)
      * [Pre-warm the EBS volume](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-prewarm.html)
-       (note that this is quite time-consuming)
+       (note that this typically takes around an hour)
+     * Run the re-ip script (this binds OpenShift to the new hostname and IP of
+       the instance, rebuilds the SSL certs, etc.)
+     * Enable password-based ssh authentication (so the demo user can ssh in)
      * Pre-warm OpenShift by doing a NodeJS and Java build
      * Cleanup aforementioned builds
 
