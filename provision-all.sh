@@ -1,43 +1,45 @@
 #!/bin/bash -x
 
-identity=${1}
-[ "${identity}" = "" ] && echo "** PLEASE PROVIDE A PATH TO AWS IDENTITY CREDENTIALS (PEM FILE)**" && exit 255
+if [ -n "$1" ]; then
+  identity="-i $1"
+fi
 
 mkdir -p logs
 
 hosts=()
 
-while read line
+while IFS=, read name ip dns password
 do
-  OLDIFS=$IFS;
-  IFS=, vals=($line)
-  IFS=$OLDIFS
+  hosts+=("$dns")
 
-  name=${vals[0]}
-  ip=${vals[1]}
-  dns=$(echo ${vals[2]} | cut -d '"' -f2)
-  pwd=$(echo ${vals[3]} | cut -d '"' -f2)
+  bin/issh $identity -tt cloud-user@$dns sudo passwd demo --stdin <<<$password &>logs/$dns-1-passwd
+  [ $? -ne 0 ] && echo "Failed to set password on $dns (host not finished booting yet?), bailing" && exit 1
 
-  hosts+=("${dns}")
+  scp $identity -S bin/issh target/* cloud-user@$dns: &>logs/$dns-2-scp
+done <creds.csv
 
-  bin/issh cloud-user@${dns} -i ${identity} -tt "echo ${pwd} | sudo passwd demo --stdin" </dev/null &>logs/$dns-1-passwd
-  [ $? -ne 0 ] && echo "*** ERROR $? RETURNED FOR ${dns} WHILST SETTING DEMO PASSWORD, bailing ***" && exit 1
+for dns in "${hosts[@]}"
+do
+  bin/issh $identity -tt cloud-user@$dns sudo ./warm-ebs.sh &>logs/$dns-3-ebs &
+done
 
-  scp -i ${identity} -S bin/issh target/* cloud-user@$dns: &>logs/$dns-2-scp
-  [ $? -ne 0 ] && echo "*** ERROR $? RETURNED FOR ${dns} WHILST COPYING SCRIPTS, bailing ***" && exit 1
+echo "*** WAITING FOR EBS WARMUP PROCESSES ***"
+wait
 
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./openshift-aws-reip.sh"' </dev/null &>logs/$dns-3-reip &
-done < creds.csv
+for dns in "${hosts[@]}"
+do
+  bin/issh $identity -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./openshift-aws-reip.sh"' </dev/null &>logs/$dns-4-reip &
+done
 
 echo "*** WAITING FOR REIP PROCESSES ***"
 wait
 
 for dns in "${hosts[@]}"
 do
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PermitEmptyPasswords yes/ d" /etc/ssh/sshd_config' &>logs/$dns-4-sshd
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'sed -i -e "/^PasswordAuthentication no/ d" /etc/ssh/sshd_config' >>logs/$dns-4-sshd 2>&1
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'systemctl restart sshd.service' >>logs/$dns-4-sshd 2>&1
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./create-novnc.sh"' &>logs/$dns-5-novnc &
+  bin/issh $identity -tt cloud-user@$dns sudo 'sed -i -e "/^PermitEmptyPasswords yes/ d" /etc/ssh/sshd_config' &>logs/$dns-5-sshd
+  bin/issh $identity -tt cloud-user@$dns sudo 'sed -i -e "/^PasswordAuthentication no/ d" /etc/ssh/sshd_config' >>logs/$dns-5-sshd 2>&1
+  bin/issh $identity -tt cloud-user@$dns sudo 'systemctl restart sshd.service' >>logs/$dns-5-sshd 2>&1
+  bin/issh $identity -tt cloud-user@$dns sudo 'bash -c "cd /home/cloud-user; ./create-novnc.sh"' &>logs/$dns-6-novnc &
 done
 
 echo "*** WAITING FOR NOVNC PROCESSES ***"
@@ -45,13 +47,8 @@ wait
 
 for dns in "${hosts[@]}"
 do
-  bin/issh -i ${identity} -tt cloud-user@$dns sudo ./warm-openshift.sh &>logs/$dns-6-warmup &
+  bin/issh $identity -tt cloud-user@$dns sudo ./warm-openshift.sh &>logs/$dns-7-warmup &
 done
 
-echo "*** WAITING FOR WARMUP PROCESSES ***"
+echo "*** WAITING FOR OSE WARMUP PROCESSES ***"
 wait
-
-for dns in "${hosts[@]}"
-do
-  bin/issh -i ${identity} -tt cloud-user@$dns nohup sudo ./warm-ebs.sh &>logs/$dns-7-ebs
-done

@@ -2,109 +2,55 @@
 
 PUBIP=$(curl -s 169.254.169.254/latest/meta-data/public-ipv4)
 PRIVIP=$(ip -4 addr show dev eth0 | sed -n '/inet / { s!.*inet !!; s!/.*!!; p; }')
-OLDHN=openshift.example.com
-NEWHN=ec2-${PUBIP//./-}.eu-west-1.compute.amazonaws.com
-PATHS="/etc/hostname /etc/openshift /home/demo/.kube/config /home/demo/.m2/settings.xml /home/demo/git /root/.kube/config /usr/lib64/firefox/firefox.cfg /usr/share/doc/demobuilder"
+PUBHN=openshift.$PUBIP.xip.io
+PRIVHN=ip-${PRIVIP//./-}.eu-west-1.compute.internal
 
-stop() {
-  systemctl stop openshift-routewatcher
-  systemctl stop openshift-node
-  oc project default
-  oc delete pods --all
-  systemctl stop openshift-master
-  systemctl stop openshift-auth
-  systemctl stop openshift-dns-intercept
-  systemctl stop docker
-  umount /var/lib/openshift/openshift.local.volumes/pods/*/volumes/*/*
-}
+hostname $PRIVHN
 
-start() {
-  systemctl start docker
-  docker ps -aq |xargs docker rm -f || true
-  systemctl start openshift-auth
-  /usr/local/libexec/openshift-master-ipcfg.py 
-  systemctl start openshift-master
-  oc delete hostsubnet openshift.example.com || true
-  /usr/local/libexec/openshift-node-ipcfg.py 
-  systemctl start openshift-node
-  systemctl start openshift-routewatcher
-}
+rm -f /etc/NetworkManager/dispatcher.d/99-hosts
 
-save() {
-  for i in $PATHS /var/lib/openshift; do
-    [ -e $i-clean ] || cp -a $i $i-clean
-  done
-}
+cat >/etc/hosts <<EOF
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+$PRIVIP  openshift.example.com $PRIVHN $PUBHN
+EOF
 
-reset() {
-  for i in $PATHS /var/lib/openshift; do
-    rm -rf $i
-    cp -a $i-clean $i
-  done
-}
+rm -f /usr/local/libexec/atomic-openshift-{master-ipcfg,node-ipcfg}.py /lib/systemd/system/atomic-openshift-{master-ipcfg,node-ipcfg}.service
+systemctl daemon-reload
 
-stop
-#save
-#reset
+cp atomic-openshift-dns-intercept.py /usr/local/libexec
+systemctl restart atomic-openshift-dns-intercept
 
-find $PATHS -type f | xargs sed -i -e "s/${OLDHN//./\\.}/$NEWHN/g"
-find $PATHS -type f | xargs sed -i -e "s/${OLDHN//./-}/${NEWHN//./-}/g"
-find $PATHS -type f | xargs sed -i -e "s/$PRIVIP/$PUBIP/g"
+python -c 'import random; print "%02X" % random.randint(11, 1000000000)' >/etc/origin/master/ca.serial.txt
 
-for old in $(find $PATHS -type d | sort -r); do
-  new=$(echo $old | sed -e "s/${OLDHN//./\\.}/$NEWHN/g")
-  [ $old = $new ] || mv $old $new
-done
-for old in $(find $PATHS -type f | sort -r); do
-  new=$(echo $old | sed -e "s/${OLDHN//./\\.}/$NEWHN/g")
-  [ $old = $new ] || mv $old $new
-done
+./reip.py $PRIVHN $PUBHN $PRIVIP $PUBIP $PUBIP.xip.io
 
-rm -f /etc/dhcp/dhclient-eth0-up-hooks
-sed -i -e "/$OLDHN/ d" /etc/hosts
+systemctl restart atomic-openshift-routewatcher
 
-sed -i -e "s/apps.example.com/apps.$PUBIP.xip.io/" /etc/openshift/master/master-config.yaml
-
-python -c 'import random; print random.randint(11, 1000000000)' >/etc/openshift/master/ca.serial.txt
-./openshift-aws-crypto.py $NEWHN
-
-hostname $NEWHN
-
-systemctl mask openshift-dns-intercept
-sed -i -e '/hostsubnet/ d' /usr/local/libexec/openshift-node-ipcfg.py
-
-start
-
-oc delete node $OLDHN
-
-oc get templates -n openshift -o json >/tmp/json
-oc delete templates -n openshift --all
-sed -e "s/${OLDHN//./\\.}/$NEWHN/g" /tmp/json | oc create -n openshift -f -
-
-for i in docker-registry router; do
-  oc delete dc $i
-  oc delete svc $i
-done
-
-oadm registry --config=/etc/openshift/master/admin.kubeconfig --credentials=/etc/openshift/master/openshift-registry.kubeconfig --mount-host=/registry --service-account=infra --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
-
-oadm router --credentials=/etc/openshift/master/openshift-router.kubeconfig --service-account=infra --images='registry.access.redhat.com/openshift3/ose-${component}:${version}'
-
-oc delete pod $(oc get pods | grep image-registry | awk '{print $1;}')
-
-for i in /home/demo/git/*; do
-  pushd $i
-  rm -rf .git
-  git init
-  git add -A
-  git commit -m 'Initial commit'
-  git remote add origin git://localhost/demo/$(basename $i)
-  git push -f -u origin master
-  popd
-done
+cat >/home/demo/.kube/config <<EOF
+kind: Config
+apiVersion: v1
+clusters:
+- cluster:
+    server: https://$PUBHN:8443
+  name: ${PUBHN//./-}:8443
+contexts:
+- context:
+    cluster: ${PUBHN//./-}:8443
+  name: ${PUBHN//./-}:8443
+current-context: ${PUBHN//./-}:8443
+EOF
 
 chown -R demo:demo /home/demo
 
+cat >/usr/lib64/firefox/firefox.cfg <<EOF
+//
+pref("browser.startup.homepage", "https://$PUBHN:8443/console/");
+pref("startup.homepage_override_url", "");
+pref("startup.homepage_welcome_url", "");
+pref("signon.rememberSignons", false);
+EOF
+
 echo 'Done.'
-echo "https://$(hostname):8443/"
+echo "https://$PUBHN:8443/"
 echo 'dont forget to set the password for the demo user, and warm up the EBS volume'
