@@ -58,6 +58,8 @@ def make_cert(fn, o, cn, san, eku):
     with open("%s.crt" % fn, "w") as f:
         f.write(OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
                                                 cert))
+        f.write(OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_PEM,
+                                                ca_cert))
 
 
 def do_master_config():
