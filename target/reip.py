@@ -304,7 +304,7 @@ def do_hawkular_config_pre(api):
     sec = api.get("/api/v1/namespaces/openshift-infra/secrets/hawkular-metrics-secrets")
     pw = sec.data["hawkular-metrics.keystore.password"].decode("base64").strip()
     os.system("openssl pkcs12 -export -in hawkular-metrics.crt -inkey hawkular-metrics.key -out hawkular-metrics.pkcs12 -name hawkular-metrics -password pass:" + pw)
-    os.system("keytool -importkeystore -srckeystore hawkular-metrics.pkcs12 -srcstoretype pkcs12 -destkeystore keystore -deststorepass " + pw + " -srcstorepass " + pw)
+    os.system("keytool -importkeystore -srckeystore hawkular-metrics.pkcs12 -srcstoretype pkcs12 -destkeystore keystore -deststorepass " + pw + " -srcstorepass " + pw + " -noprompt")
     sec.data["hawkular-metrics.keystore"] = base64.b64encode(open("keystore").read())
     api.put(sec.metadata.selfLink, sec)
 
@@ -318,8 +318,7 @@ def do_hawkular_config_pre(api):
     sec = api.get("/api/v1/namespaces/openshift-infra/secrets/hawkular-cassandra-secrets")
     pw = sec.data["cassandra.truststore.password"].decode("base64").strip()
     open("truststore", "w").write(sec.data["cassandra.truststore"].decode("base64"))
-    os.system("keytool -delete -alias hawkular-metrics -keystore truststore -storepass " + pw)
-    os.system("keytool -import -trustcacerts -alias hawkular-metrics -file hawkular-metrics.crt.der -keystore truststore -storepass " + pw)
+    os.system("keytool -import -trustcacerts -alias hawkular-metrics -file hawkular-metrics.crt.der -keystore truststore -storepass " + pw + " -noprompt")
     sec.data["cassandra.truststore"] = base64.b64encode(open("truststore").read())
     api.put(sec.metadata.selfLink, sec)
 
