@@ -106,7 +106,7 @@ while true ; do
   [[ $httpcode -eq 200 ]] && echo "Route responding to requests" && break
 
   echo "Route returned HTTP code: $httpcode"
-  [[ $checks -gt 6 ]] && echo "ERROR: route unreachable after 30 seconds" && exit 1
+  [[ $checks -gt 36 ]] && echo "ERROR: route unreachable after 3 mins" && exit 1
 
   sleep 5
 done
