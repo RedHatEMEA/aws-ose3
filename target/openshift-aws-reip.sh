@@ -18,6 +18,8 @@ EOF
 rm -f /usr/local/libexec/atomic-openshift-{master-ipcfg,node-ipcfg}.py /lib/systemd/system/atomic-openshift-{master-ipcfg,node-ipcfg}.service
 systemctl daemon-reload
 
+# we special-case this file to catch remaining pod resolves of
+# openshift.example.com.  Examples include git clones and HTTP proxy connects.
 cp atomic-openshift-dns-intercept.py /usr/local/libexec
 systemctl restart atomic-openshift-dns-intercept
 
