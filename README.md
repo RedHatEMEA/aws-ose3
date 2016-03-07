@@ -120,6 +120,13 @@ first!
    * `docs/labels.pdf` contains the labels - print (make sure scaling is turned
      off) on Avery 7163 A4 laser labels
 
+## Clean up
+
+You can clean up using aws api and the RunName tag that was generated and set on each instance as part of the start script.
+
+   * Running the following replacing xxxxxx with the RunName `aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances --filter="Name=tag:RunName,Values=xxxxxxx" --query Reservations[].Instances[].InstanceId --output text)`
+ 
+
 ## Authors
 
 * Jim Minter
