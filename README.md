@@ -72,7 +72,7 @@ first!
      group of your VPC
    * `SUBNET=subnet-xxxxxxxx` - you'll need to change this to match the subnet
      ID on your VPC
-   * `AMI=ami-1becd86c` - change AMI ID if required
+   * `AMI=ami-14fc5b67` - change AMI ID if required
    * `KEYNAME=$USER` - by default we expect your AWS SSH key is named the same
      as your current user, but you can change this if required
 
