@@ -56,7 +56,7 @@ first!
   * Sanity check your VPC internet routing, elastic IP, public DNS resolution,
     firewall works with a standard Linux instance!
 
-* Access to the base AMI, currently **ami-68c8771b**.  E-mail me your
+* Access to the base AMI, currently **ami-654bcd16**.  E-mail me your
   AWS account number to get access
 
 * Customer briefed that they will need to be able to VNC an AWS instance at a
@@ -72,7 +72,7 @@ first!
      group of your VPC
    * `SUBNET=subnet-xxxxxxxx` - you'll need to change this to match the subnet
      ID on your VPC
-   * `AMI=ami-68c8771b` - change AMI ID if required
+   * `AMI=ami-654bcd16` - change AMI ID if required
    * `KEYNAME=$USER` - by default we expect your AWS SSH key is named the same
      as your current user, but you can change this if required
 
@@ -122,9 +122,11 @@ first!
 
 ## Clean up
 
-You can clean up using aws api and the RunName tag that was generated and set on each instance as part of the start script.
+You can clean up using the AWS API and the RunName tag that was
+generated and set on each instance as part of the start script.
 
-   * Running the following replacing xxxxxx with the RunName `aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances --filter="Name=tag:RunName,Values=xxxxxxx" --query Reservations[].Instances[].InstanceId --output text)`
+   * Run the following replacing $RUNNAME:
+     `aws ec2 terminate-instances --instance-ids $(aws ec2 describe-instances --filter="Name=tag:RunName,Values=$RUNNAME" --query Reservations[].Instances[].InstanceId --output text)`
  
 
 ## Authors
