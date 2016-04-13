@@ -20,6 +20,14 @@ done <creds.csv
 
 for dns in "${hosts[@]}"
 do
+  bin/issh $identity -tt cloud-user@$dns sudo ./fixup.sh &>logs/$dns-2a-fixup &
+done
+
+echo "*** WAITING FOR FIXUP PROCESSES ***"
+wait
+
+for dns in "${hosts[@]}"
+do
   bin/issh $identity -tt cloud-user@$dns sudo ./warm-ebs.sh &>logs/$dns-3-ebs &
 done
 

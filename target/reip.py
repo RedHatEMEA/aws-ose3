@@ -237,7 +237,10 @@ def do_cleanup(api):
         api.delete(i.metadata.selfLink)
 
     for i in api.get("/api/v1/pods")._items:
-        api.delete(i.metadata.selfLink)
+        try:
+            api.delete(i.metadata.selfLink)
+        except Exception:
+            print "** Exception **"
 
 
 def do_services_config_post(api):
