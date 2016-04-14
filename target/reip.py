@@ -321,6 +321,7 @@ def do_hawkular_config_pre(api):
     sec = api.get("/api/v1/namespaces/openshift-infra/secrets/hawkular-cassandra-secrets")
     pw = sec.data["cassandra.truststore.password"].decode("base64").strip()
     open("truststore", "w").write(sec.data["cassandra.truststore"].decode("base64"))
+    os.system("keytool -delete -alias hawkular-metrics -keystore truststore -storepass " + pw + " -noprompt")
     os.system("keytool -import -trustcacerts -alias hawkular-metrics -file hawkular-metrics.crt.der -keystore truststore -storepass " + pw + " -noprompt")
     sec.data["cassandra.truststore"] = base64.b64encode(open("truststore").read())
     api.put(sec.metadata.selfLink, sec)
