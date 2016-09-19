@@ -1,4 +1,4 @@
-AMI=ami-654bcd16
+AMI=ami-0b304b78
 KEYNAME=$USER
 SECGROUP=sg-xxxxxxxx
 SUBNET=subnet-xxxxxxxx
